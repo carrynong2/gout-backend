@@ -4,7 +4,9 @@ import dev.carrynong.goutbackend.auth.dto.AuthenticateUser;
 import dev.carrynong.goutbackend.auth.repository.UserLoginRepository;
 import dev.carrynong.goutbackend.common.enumeration.RoleEnum;
 import dev.carrynong.goutbackend.common.exception.EntityNotFoundException;
+import dev.carrynong.goutbackend.tourcompany.repositoriy.TourCompanyLoginRepository;
 import dev.carrynong.goutbackend.user.repository.UserRoleRepository;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,14 +19,28 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailService implements UserDetailsService {
     private final UserLoginRepository userLoginRepository;
     private final UserRoleRepository userRoleRepository;
+    private final TourCompanyLoginRepository tourCompanyLoginRepository;
 
-    public CustomUserDetailService(UserLoginRepository userLoginRepository, UserRoleRepository userRoleRepository) {
+    public CustomUserDetailService(UserLoginRepository userLoginRepository, UserRoleRepository userRoleRepository, TourCompanyLoginRepository tourCompanyLoginRepository) {
         this.userLoginRepository = userLoginRepository;
         this.userRoleRepository = userRoleRepository;
+        this.tourCompanyLoginRepository = tourCompanyLoginRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        if (isEmail(username)) {
+            return userFlow(username);
+        }
+        return tourCompanyFlow(username);
+
+    }
+
+    private boolean isEmail(String username) {
+        return EmailValidator.getInstance().isValid(username);
+    }
+
+    private AuthenticateUser userFlow(String username) {
         var userLogin = userLoginRepository.findByEmail(username)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Credential for %s not found", username)));
         var userId = userLogin.userId().getId();
@@ -35,6 +51,12 @@ public class CustomUserDetailService implements UserDetailsService {
             role = RoleEnum.ADMIN;
         }
         return new AuthenticateUser(userId, userLogin.email(), userLogin.password(), role);
+    }
+
+    private AuthenticateUser tourCompanyFlow(String username) {
+        var tourCompanyLogin = tourCompanyLoginRepository.findOneByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Credential for %s not found", username)));
+        return new AuthenticateUser(tourCompanyLogin.id(), tourCompanyLogin.username(), tourCompanyLogin.password(), RoleEnum.COMPANY);
     }
 
 }

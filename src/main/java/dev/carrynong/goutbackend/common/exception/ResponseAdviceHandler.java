@@ -42,6 +42,16 @@ public class ResponseAdviceHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.notFound().build();
     }
 
+    @ExceptionHandler(RefreshTokenExpiredException.class)
+    protected ResponseEntity<Object> handleRefreshTokenExpired(RefreshTokenExpiredException e) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage()
+        );
+        logger.info("Refresh token expired: {}", detail);
+        return ResponseEntity.badRequest().body(detail);
+    }
+
     // Global handling
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Object> globalExceptionHandling(Exception e) {
