@@ -13,6 +13,8 @@ import dev.carrynong.goutbackend.user.repository.UserRoleRepository;
 import dev.carrynong.goutbackend.wallet.service.WalletService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,11 @@ public class UserServiceImpl implements UserService {
         this.walletService = walletService;
         this.authService = authService;
         this.roleService = roleService;
+    }
+
+    @Override
+    public Page<User> getUserByFirstName(String keyword, Pageable pageable) {
+        return userRepository.findByFirstNameContaining(keyword,pageable);
     }
 
     @Override
@@ -57,7 +64,7 @@ public class UserServiceImpl implements UserService {
 
         var userRole = roleService.bindingNewUser(newUser.id(), RoleEnum.CONSUMER);
 
-        authService.createConsumerCredential(newUser.id(), body.email(), body.password());
+        var userCredential = authService.createConsumerCredential(newUser.id(), body.email(), body.password());
         walletService.createConsumerWallet(newUser.id());
         return new UserInfoDTO(newUser.id(), newUser.firstName(), newUser.lastName(), newUser.phoneNumber());
     }
@@ -81,6 +88,8 @@ public class UserServiceImpl implements UserService {
         logger.info("Delete credential for userId: {}", user.id());
         walletService.deleteConsumerWalletByUserId(user.id());
         logger.info("Delete wallet for userId: {}", user.id());
+        roleService.deleteRoleByUserId(user.id());
+        logger.info("Delete role for userId: {}", user.id());
         userRepository.delete(user);
         logger.info("Delete userId: {}", user.id());
         return true;

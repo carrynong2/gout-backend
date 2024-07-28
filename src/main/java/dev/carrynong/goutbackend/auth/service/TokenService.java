@@ -3,6 +3,7 @@ package dev.carrynong.goutbackend.auth.service;
 import dev.carrynong.goutbackend.auth.dto.AuthenticateUser;
 import dev.carrynong.goutbackend.auth.model.RefreshToken;
 import dev.carrynong.goutbackend.auth.model.UserLogin;
+import dev.carrynong.goutbackend.auth.repository.RefreshTokenRepository;
 import dev.carrynong.goutbackend.tourcompany.model.TourCompanyLogin;
 import dev.carrynong.goutbackend.user.model.User;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,16 +28,18 @@ public class TokenService {
     private final long accessTokenExpiredInSeconds;
     private final long refreshTokenExpiredInSeconds;
     private final CustomUserDetailService customUserDetailService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public TokenService(JwtEncoder jwtEncoder,
                         @Value("${token.access-token-expired-in-seconds}")
                         long accessTokenExpiredInSeconds,
                         @Value("${token.refresh-token-expired-in-seconds}")
-                        long refreshTokenExpiredInSeconds, CustomUserDetailService customUserDetailService) {
+                        long refreshTokenExpiredInSeconds, CustomUserDetailService customUserDetailService, RefreshTokenRepository refreshTokenRepository) {
         this.jwtEncoder = jwtEncoder;
         this.accessTokenExpiredInSeconds = accessTokenExpiredInSeconds;
         this.refreshTokenExpiredInSeconds = refreshTokenExpiredInSeconds;
         this.customUserDetailService = customUserDetailService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public String issueAccessToken(Authentication auth, Instant issueDate) {
@@ -104,5 +107,16 @@ public class TokenService {
             return issueRefreshToken();
         }
         return refreshTokenEntity.token();
+    }
+
+    public void cleanupRefreshTokenThatNotExpired() {
+        var now = Instant.now();
+        // Assume life of refresh token = 1 day
+        // Token issued on 202426174716
+        // Token expired on 202426184716
+        // Cron start at   202426184716
+        // If we want to check expired token from issuedDate -> minus seconds
+        var thresholdDate = now.minusSeconds(refreshTokenExpiredInSeconds);
+        refreshTokenRepository.updateRefreshTokenThatExpired(true, thresholdDate);
     }
 }

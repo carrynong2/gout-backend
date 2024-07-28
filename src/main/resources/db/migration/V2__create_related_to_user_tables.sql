@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "role" (
 CREATE TABLE IF NOT EXISTS "user_role" (
     id SERIAL PRIMARY KEY,
     user_id INTEGER UNIQUE NOT NULL REFERENCES "user"(id),
-    role_id INTEGER UNIQUE NOT NULL REFERENCES "role"(id)
+    role_id INTEGER NOT NULL REFERENCES "role"(id)
 );
 
 CREATE TABLE IF NOT EXISTS "user_login" (

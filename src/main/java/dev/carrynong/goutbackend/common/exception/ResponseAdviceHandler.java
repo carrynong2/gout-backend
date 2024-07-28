@@ -64,4 +64,22 @@ public class ResponseAdviceHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.internalServerError()
                 .body(detail);
     }
+
+    @ExceptionHandler(UserIdMismatchException.class)
+    protected ResponseEntity<Object> userIdMismatchExceptionHandling(UserIdMismatchException e) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage());
+        logger.info("UserId mismatch request: {}", detail);
+        return ResponseEntity.badRequest().body(detail);
+    }
+
+    @ExceptionHandler(BookingExistsException.class)
+    protected ResponseEntity<Object> bookingExistsExceptionHandling(BookingExistsException e) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage());
+        logger.info("Booking exists: {}", detail);
+        return ResponseEntity.badRequest().body(detail);
+    }
 }

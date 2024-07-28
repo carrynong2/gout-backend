@@ -2,12 +2,15 @@ package dev.carrynong.goutbackend.user;
 
 import dev.carrynong.goutbackend.auth.model.UserLogin;
 import dev.carrynong.goutbackend.auth.service.AuthService;
+import dev.carrynong.goutbackend.common.enumeration.RoleEnum;
 import dev.carrynong.goutbackend.common.exception.CredentialExistsException;
 import dev.carrynong.goutbackend.common.exception.EntityNotFoundException;
 import dev.carrynong.goutbackend.user.dto.UserCreationDTO;
 import dev.carrynong.goutbackend.user.dto.UserUpdateDTO;
 import dev.carrynong.goutbackend.user.model.User;
+import dev.carrynong.goutbackend.user.model.UserRole;
 import dev.carrynong.goutbackend.user.repository.UserRepository;
+import dev.carrynong.goutbackend.user.service.RoleService;
 import dev.carrynong.goutbackend.user.service.UserServiceImpl;
 import dev.carrynong.goutbackend.wallet.model.UserWallet;
 import dev.carrynong.goutbackend.wallet.service.WalletService;
@@ -37,6 +40,8 @@ public class UserServiceTest {
     private WalletService walletService;
     @Mock
     private AuthService authService;
+    @Mock
+    private RoleService roleService;
 
     @Test
     void whenGetUserDTOByIdThenSuccess() {
@@ -76,6 +81,9 @@ public class UserServiceTest {
 
         when(authService.createConsumerCredential(anyInt(), anyString(), anyString()))
                 .thenReturn(mockUserLogin);
+
+        when(roleService.bindingNewUser(anyInt(), eq(RoleEnum.CONSUMER)))
+                .thenReturn(new UserRole(1,  AggregateReference.to(1),  AggregateReference.to(RoleEnum.CONSUMER.getId())));
 
         var body = new UserCreationDTO("Test", "Test",
                 "0800125480", "test@test.com", "123456789");
@@ -129,6 +137,7 @@ public class UserServiceTest {
                 .thenReturn(Optional.of(mockUser));
         doNothing().when(authService).deleteCredentialByUserId(anyInt());
         doNothing().when(walletService).deleteConsumerWalletByUserId(anyInt());
+        doNothing().when(roleService).deleteRoleByUserId(anyInt());
         doNothing().when(userRepository).delete(any(User.class));
         Assertions.assertTrue(userService.deleteUserById(1));
     }

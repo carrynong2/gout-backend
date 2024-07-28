@@ -14,7 +14,6 @@ import dev.carrynong.goutbackend.tourcompany.repositoriy.TourCompanyLoginReposit
 import dev.carrynong.goutbackend.tourcompany.repositoriy.TourCompanyRepository;
 import dev.carrynong.goutbackend.user.model.User;
 import dev.carrynong.goutbackend.user.repository.UserRepository;
-import org.apache.juli.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
@@ -22,13 +21,11 @@ import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Service

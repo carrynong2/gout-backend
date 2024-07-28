@@ -34,3 +34,11 @@ management:
 token:
   access-token-expired-in-seconds: ${ACCESS_TOKEN_EXP_SEC:3600} # Default: 1 Hour
   refresh-token-expired-in-seconds: ${REFRESH_TOKEN_EXP_SEC:259200} # Default: 1 Month
+
+org.jobrunr:
+  background-job-server.enabled: ${JOBRUNR_BACKGROUND_JOB_ENABLED:true}
+  dashboard.enabled: ${JOBRUNR_DASHBOARD_ENABLED:true}
+  background-job-server.thread-type: VirtualThreads
+
+booking:
+  tour-price: ${BOOK_TOUR_PRICE:100}

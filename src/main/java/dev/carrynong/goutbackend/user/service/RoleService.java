@@ -1,6 +1,7 @@
 package dev.carrynong.goutbackend.user.service;
 
 import dev.carrynong.goutbackend.common.enumeration.RoleEnum;
+import dev.carrynong.goutbackend.common.exception.EntityNotFoundException;
 import dev.carrynong.goutbackend.user.model.Role;
 import dev.carrynong.goutbackend.user.model.User;
 import dev.carrynong.goutbackend.user.model.UserRole;
@@ -33,5 +34,11 @@ public class RoleService {
         AggregateReference<Role, Integer> roleId = AggregateReference.to(roleEnum.getId());
         var prepareRole = new UserRole(null, userReference, roleId);
         return userRoleRepository.save(prepareRole);
+    }
+
+    public void deleteRoleByUserId(int userId) {
+        var userRole = userRoleRepository.findByUserId(AggregateReference.to(userId))
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Role for username: %s not found", userId)));
+        userRoleRepository.delete(userRole);
     }
 }

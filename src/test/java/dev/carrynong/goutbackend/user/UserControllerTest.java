@@ -1,16 +1,21 @@
 package dev.carrynong.goutbackend.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.carrynong.goutbackend.tour.model.Tour;
 import dev.carrynong.goutbackend.user.controller.UserController;
 import dev.carrynong.goutbackend.user.dto.UserCreationDTO;
 import dev.carrynong.goutbackend.user.dto.UserInfoDTO;
 import dev.carrynong.goutbackend.user.dto.UserUpdateDTO;
+import dev.carrynong.goutbackend.user.model.User;
 import dev.carrynong.goutbackend.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -18,8 +23,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(UserController.class)
@@ -36,6 +42,22 @@ public class UserControllerTest {
     public void setup() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
+
+    @Test
+    void whenGetPageUserThenSuccessful() throws Exception {
+        var mockUser = new User(1, "Test", "Test", "0800125480");
+        List<User> users = List.of(mockUser);
+        Page<User> pageUsers = new PageImpl<>(users);
+        when(userService.getUserByFirstName(anyString(), any(Pageable.class)))
+                .thenReturn(pageUsers);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(
+                                String.format("/api/v1/users?keyword=est&page=0&size=2&sortField=id&sortDirection=asc", 1))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray());
+    }
+
 
     @Test
     void whenGetUserByIdThenSuccessful() throws Exception {
